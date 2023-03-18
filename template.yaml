@@ -17,6 +17,22 @@ Resources:
     Properties:
       StageName: Prod
 
+  Queue:
+    Type: AWS::SQS::Queue
+
+  DynamoDb:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: message_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: message_id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
   MainFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -30,6 +46,29 @@ Resources:
             RestApiId: !Ref Api
             Path: /{proxy+}
             Method: ANY
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt Queue.QueueName
+      Environment:
+        Variables:
+          QUEUE_URL: !Ref Queue
+          DYNAMO_TABLE: !Select [ 1, !Split [ '/', !GetAtt DynamoDb.Arn ] ]
+          API_ROOT_PATH: /Prod
+
+  ProcessMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app/
+      Handler: main.process_message
+      Runtime: python3.9
+      Events:
+        SqsEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt Queue.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Select [ 1, !Split [ '/', !GetAtt DynamoDb.Arn ] ]
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

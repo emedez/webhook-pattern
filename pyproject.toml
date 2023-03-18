@@ -13,6 +13,7 @@ uvicorn = {extras = ["standard"], version = "^0.21.1"}
 devtools = "^0.10.0"
 mangum = "^0.17.0"
 boto3 = "^1.26.94"
+dynamodb-json = "^1.3"
 
 
 [build-system]
