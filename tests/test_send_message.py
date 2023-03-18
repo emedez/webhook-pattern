@@ -23,7 +23,8 @@ def test_send_message(client: TestClient):
     debug(response_json)
 
     # give it time to process the queue
-    time.sleep(3)
+    # TODO: adjust time if needed
+    time.sleep(5)
 
     boto_session = boto3.session.Session()
     dynamodb_client = boto_session.client("dynamodb")
