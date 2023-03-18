@@ -2,9 +2,11 @@ from typing import Any
 
 from devtools import debug
 from fastapi import FastAPI
+from mangum import Mangum
 
 app = FastAPI(
     title="Webhook Pattern",
+    root_path="/Prod",
 )
 
 
@@ -16,7 +18,10 @@ async def send_message(
     payload: dict,
 ) -> Any:
     debug(payload)
-    ...
+    return payload
+
+
+lambda_handler = Mangum(app)
 
 
 if __name__ == "__main__":

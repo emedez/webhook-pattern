@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "webhook-pattern"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-wx2duh3qhnys"
+s3_prefix = "webhook-pattern"
+region = "ap-southeast-1"
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
