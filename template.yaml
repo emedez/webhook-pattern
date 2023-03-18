@@ -69,6 +69,11 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Select [ 1, !Split [ '/', !GetAtt DynamoDb.Arn ] ]
+      Environment:
+        Variables:
+          QUEUE_URL: !Ref Queue
+          DYNAMO_TABLE: !Select [ 1, !Split [ '/', !GetAtt DynamoDb.Arn ] ]
+          API_ROOT_PATH: /Prod
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

@@ -1,7 +1,9 @@
 import json
 import logging
+import uuid
 from typing import Any
 
+import boto3
 from devtools import debug
 from fastapi import FastAPI, Depends
 from fastapi.encoders import jsonable_encoder
@@ -16,7 +18,7 @@ logging.getLogger().setLevel("DEBUG")
 
 app = FastAPI(
     title="Webhook Pattern",
-    root_path="/Prod",
+    root_path=settings.API_ROOT_PATH,
 )
 
 
@@ -28,6 +30,7 @@ async def send_message(
     payload: dict,
     sqs_client=Depends(deps.get_sqs_client),
 ) -> Any:
+    payload["message_id"] = str(uuid.uuid4())
     debug(payload)
 
     try:
@@ -42,7 +45,7 @@ async def send_message(
         logging.error(f"Sent message failed: {e}")
         raise
 
-    return sqs_response
+    return payload
 
 
 def process_message(event, context):
@@ -53,7 +56,8 @@ def process_message(event, context):
             item = json.loads(
                 json_util.dumps(jsonable_encoder(message))
             )
-            dynamodb_client = deps.get_dynamodb_client()
+            boto_session = boto3.session.Session()
+            dynamodb_client = boto_session.client("dynamodb")
             dynamodb_client.put_item(
                 TableName=settings.DYNAMO_TABLE,
                 Item=item,
@@ -62,7 +66,7 @@ def process_message(event, context):
             logging.exception(e)
 
 
-lambda_handler = Mangum(app)
+lambda_handler = Mangum(app, lifespan="off")
 
 
 if __name__ == "__main__":
