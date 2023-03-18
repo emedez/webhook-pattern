@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     QUEUE_URL: Optional[str]
     DYNAMO_TABLE: Optional[str]
 
+    class Config:
+        case_sensitive = True
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
 
 settings = Settings()
 debug(settings)
